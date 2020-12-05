@@ -1,0 +1,26 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: loki
+
+bases:
+  - bases
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+# commonLabels:
+#   release: loki-stack
+
+configMapGenerator:
+  - name: promtail
+    files:
+      - promtail.yaml=promtail/promtail.config.yml
+      # - promtail.yaml=promtail/promtail.config.helm.yml
+
+secretGenerator:
+  - name: loki
+    # behavior: replace
+    files:
+      - loki.yaml=loki/loki.secret.yml
+    type: Opaque

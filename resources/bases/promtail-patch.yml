@@ -1,0 +1,22 @@
+---
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: promtail
+spec:
+  template:
+    spec:
+      containers:
+        - name: promtail
+          volumeMounts:
+            - name: docker
+              mountPath: /data/var/lib/docker/containers
+              readOnly: true
+      volumes:
+        - name: docker
+          hostPath:
+            path: /data/var/lib/docker/containers
+        - hostPath:
+            path: /var/log/pods
+          name: pods

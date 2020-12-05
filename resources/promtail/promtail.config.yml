@@ -1,0 +1,89 @@
+client:
+  backoff_config:
+    max_period: 5m
+    max_retries: 10
+    min_period: 500ms
+  batchsize: 1048576
+  batchwait: 1s
+  external_labels: {}
+  timeout: 10s
+positions:
+  filename: /run/promtail/positions.yaml
+server:
+  http_listen_port: 3101
+target_config:
+  sync_period: 10s
+scrape_configs:
+
+
+################################
+- job_name: kubernetes-pods-app
+  pipeline_stages:
+    - docker: {}
+  kubernetes_sd_configs:
+  - role: pod
+  relabel_configs:
+  - action: drop
+    regex: .+
+    source_labels:
+    - __meta_kubernetes_pod_label_name
+
+  # - source_labels:
+  #   - __meta_kubernetes_pod_label_app
+  #   target_label: __service__
+
+  - source_labels:
+    - __meta_kubernetes_pod_node_name
+    target_label: node
+  
+  # - action: replace
+  #   source_labels:
+  #   - __meta_kubernetes_pod_host_ip
+  #   target_label: hostip
+
+  # - action: drop
+  #   regex: ''
+  #   source_labels:
+  #   - __service__
+
+  # - action: labelmap
+  #   regex: __meta_kubernetes_pod_label_(.+)
+  # - action: replace
+  #   replacement: $1
+  #   separator: /
+  #   source_labels:
+  #   - __meta_kubernetes_namespace
+  #   - __service__
+  #   target_label: job
+
+
+  - action: labelmap
+    regex: __meta_kubernetes_pod_label_(app|role)
+    target_label: app
+
+  - action: replace
+    source_labels:
+    - __meta_kubernetes_pod_label_role
+    target_label: role
+
+  - action: replace
+    source_labels:
+    - __meta_kubernetes_namespace
+    target_label: namespace
+
+  - action: replace
+    source_labels:
+    - __meta_kubernetes_pod_name
+    target_label: pod
+
+  - action: replace
+    source_labels:
+    - __meta_kubernetes_pod_container_name
+    target_label: container
+
+  - replacement: /var/log/pods/*$1/*.log
+    separator: /
+    source_labels:
+    - __meta_kubernetes_pod_uid
+    - __meta_kubernetes_pod_container_name
+    target_label: __path__
