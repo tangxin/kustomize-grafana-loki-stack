@@ -15,3 +15,7 @@
 2. 执行 `make apply` 进行部署。
 
 
+## referer
+
+> https://aleiwu.com/post/grafana-loki/
+
